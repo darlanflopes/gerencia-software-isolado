@@ -146,7 +146,10 @@ def main() -> None:
         except ValueError:
             print("Erro: informe um valor numérico válido.")
         except requests.exceptions.ConnectionError:
-            print("Erro: não foi possível conectar à API em http://127.0.0.1:5000. Verifique se backend/api.py está rodando.")
+            print(
+                "Erro: não foi possível conectar à API em http://127.0.0.1:5000. "
+                "Verifique se backend/api.py está rodando."
+            )
         except requests.exceptions.RequestException as e:
             print(f"Erro na requisição HTTP: {e}")
 
