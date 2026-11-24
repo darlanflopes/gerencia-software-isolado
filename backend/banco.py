@@ -57,9 +57,9 @@ class BancoService:
             raise ValueError("Conta não encontrada.")
         if valor <= 0:
             raise ValueError("O valor do crédito deve ser positivo.")
-        
+
         self.contas[numero].saldo += valor
-        
+
         # Regra da Conta Bônus para Depósitos: 1 ponto para cada R$ 100,00
         if isinstance(self.contas[numero], ContaBonus):
             pontos_ganhos = int(valor // 100)
@@ -70,12 +70,19 @@ class BancoService:
             raise ValueError("Conta não encontrada.")
         if valor <= 0:
             raise ValueError("O valor do débito deve ser positivo.")
-        
-        # Validação: Não deve permitir saldo negativo
-        if self.contas[numero].saldo - valor <= 0:
-            raise ValueError("Saldo insuficiente para realizar o débito (não é permitido saldo negativo, trabalhe).")
-            
-        self.contas[numero].saldo -= valor
+
+        conta = self.contas[numero]
+
+        # Requisito 2 da Versão 3: Conta Simples e Conta Bônus permitem saldo negativo até -1000.00
+        if isinstance(conta, (ContaSimples, ContaBonus)) or type(conta) is Conta:
+            if conta.saldo - valor < -1000.00:
+                raise ValueError("Limite máximo de saldo negativo excedido (R$ -1.000,00).")
+        else:
+            # Conta Poupança não permite saldo negativo (ou segue a regra padrão restrita)
+            if conta.saldo - valor < 0:
+                raise ValueError("Saldo insuficiente para realizar o débito.")
+
+        conta.saldo -= valor
 
     def transferencia(self, origem: str, destino: str, valor: float):
         if origem not in self.contas or destino not in self.contas:
@@ -114,9 +121,9 @@ class BancoService:
     def consultar_dados_conta(self, numero: str) -> dict:
         if numero not in self.contas:
             raise ValueError("Conta não encontrada.")
-        
+
         conta = self.contas[numero]
-        
+
         # Determina o tipo de conta para exibição
         if isinstance(conta, ContaBonus):
             tipo = "Conta Bônus"
