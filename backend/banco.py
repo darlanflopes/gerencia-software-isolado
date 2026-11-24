@@ -71,18 +71,11 @@ class BancoService:
         if valor <= 0:
             raise ValueError("O valor do débito deve ser positivo.")
         
-        conta = self.contas[numero]
-        
-        # Requisito 2 da Versão 3: Conta Simples e Conta Bônus permitem saldo negativo até -1000.00
-        if isinstance(conta, (ContaSimples, ContaBonus)) or type(conta) is Conta:
-            if conta.saldo - valor < -1000.00:
-                raise ValueError("Limite máximo de saldo negativo excedido (R$ -1.000,00).")
-        else:
-            # Conta Poupança não permite saldo negativo (ou segue a regra padrão restrita)
-            if conta.saldo - valor < 0:
-                raise ValueError("Saldo insuficiente para realizar o débito.")
-                
-        conta.saldo -= valor
+        # Validação: Não deve permitir saldo negativo
+        if self.contas[numero].saldo - valor <= 0:
+            raise ValueError("Saldo insuficiente para realizar o débito (não é permitido saldo negativo, trabalhe).")
+            
+        self.contas[numero].saldo -= valor
 
     def transferencia(self, origem: str, destino: str, valor: float):
         if origem not in self.contas or destino not in self.contas:
